@@ -55,6 +55,9 @@ class Neuron(pygame.sprite.Sprite):
         ATOM_IMG = pygame.Surface((40, 40), pygame.SRCALPHA)
         b_u = np.clip((self.b+self.u*(self.o-self.b)).astype(int),0,255)
         b_fill_u = np.clip((self.b_fill+self.u*(self.o_fill-self.b_fill)).astype(int),0,255)
+        if self.s == 1:
+            b_u = self.o
+            b_fill_u = self.o_fill
         pygame.gfxdraw.aacircle(ATOM_IMG, 20, 20, 19, b_u)
         pygame.gfxdraw.aacircle(ATOM_IMG, 20, 20, 18, b_u)
         pygame.gfxdraw.aacircle(ATOM_IMG, 20, 20, 17, b_u)
@@ -113,8 +116,9 @@ def main():
                     pass
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_l:
                 if state != 'link':
+                    if state == 'place':
+                        neuron_list = neuron_list[:-1]
                     state = 'link'
-                    neuron_list = neuron_list[:-1]
                     allsprites = pygame.sprite.RenderPlain(neuron_list)
                 else:
                     pass
@@ -150,7 +154,7 @@ def main():
                 elif state == 'fire':
                     for index, n in enumerate(neuron_list):
                         if n.rect.collidepoint(pygame.mouse.get_pos()):
-                            n.u = 1.
+                            n.u += 0.5*n.threshold
             elif event.type == pygame.MOUSEBUTTONUP:
                 pass
             elif event.type == MOUSEMOTION:
@@ -189,7 +193,7 @@ def main():
         a_all = a_all.dot(w)
         allsprites.update(a_all)
         screen.blit(background, (0, 0))
-        f_screen = font.render('p: place neuron mode '+str(a_all), False, (0, 0, 0))
+        f_screen = font.render('p: place neuron mode ', False, (0, 0, 0))
         f_screen.set_colorkey((250,250,250))
         screen.blit(f_screen, (10, 120))
         f_screen = font.render('l: link neurons mode', False, (0, 0, 0))
@@ -198,6 +202,10 @@ def main():
         f_screen = font.render('f: firing mode (click to fire)', False, (0, 0, 0))
         f_screen.set_colorkey((250,250,250))
         screen.blit(f_screen, (10, 150))
+        f_screen = font.render('synaptic currents:'+str(np.round(a_all,3)), False, (0, 0, 0))
+        f_screen.set_colorkey((250,250,250))
+        screen.blit(f_screen, (10, 165))
+        str(a_all)
         
         allsprites.draw(screen)
         pygame.display.flip()
